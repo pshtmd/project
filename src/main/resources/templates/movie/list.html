@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link th:href="@{/layout/styles/layout.css}" rel="stylesheet" type="text/css" media="all">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+<link th:href="@{/layout/styles/movielist.css}" rel="stylesheet" type="text/css" media="all">
+<script src="https://code.jquery.com/jquery.js"></script>
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+<script>
+  $( function() {
+	  
+    /* $( "#dialog" ).dialog(); */
+    $('.posters').hover(function(){
+    	$(this).css("cursor","pointer")
+    },function(){
+    	$(this).css("cursor","")
+    })
+    
+    // 포스터 클릭시 처리 
+    $('.posters').click(function(){
+    	let mno=$(this).attr("data-no");
+    	$.ajax({
+    		type:'post',
+    		url:'../movie/detail',
+    		data:{"mno":mno},
+    		success:function(res)
+    		{
+    			console.log(res);
+    			//let json=JSON.parse(res);
+    			$('#movie').attr("src","http://youtube.com/embed/"+res.mkey)
+    			$('#poster').attr("src",res.poster);
+    			$('#title').text(res.title);
+    			$('#title1').text(res.title);
+    			$('#reserve').text(res.reserve);
+    			$('#genre').text(res.genre);
+    			$('#time').text(res.time);
+    			$('#regdate').text(res.regdate);
+    			$('#director').text(res.director);
+    			$('#actor').text(res.actor);
+    			$('#grade').text(res.grade);
+    			$('#showuser').text(res.showuser);
+    			
+    			$('#dialog').dialog({
+    				autoOpen:false,
+    				width:700,
+    				height:650,
+    				modal:true
+    			}).dialog("open");
+    		}
+    	})
+    })
+  	/*search......*/
+  	$('.ss').click(function(){
+    	let sd=$("#sd").val();
+    	console.log('sd: '+sd);
+    	$.ajax({
+    		type:'post',
+    		url:'../movie/movie_find',
+    		data:{'sd':sd},
+    		success:function(res){
+    			console.log("success!");
+    			console.log('res: '+res);
+    		}
+    	})
+    })
+  });
+</script>
+<style type="text/css">
+.box{
+ -ms-overflow-style: none; 
+ } 
+.box::-webkit-scrollbar{
+ display:none; 
+ }
+</style>
+</head>
+<body>
+<div class="wrapper row2">
+  <!-- <div id="breadcrumb" class="clear"> 
+    ################################################################################################
+    <ul>
+      <li><a th:href="@{/main}">Home</a></li>
+      <li><a th:href="@{/movie/list}">현재상영작</a></li>
+      <li><a th:href="@{/movie/list(cno=2)}">개봉예정작</a></li>
+    </ul>
+    ################################################################################################
+  </div> -->
+</div>
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<div class="wrapper row3">
+	
+  <main class="container clear" style="padding-top:0px;"> 
+  <div style="padding: 35px;padding-left:0px;;margin-bottom: 0px;">
+	<span style="display: inline-block;"><button th:style="${cno==1?'background-color:black;border-radius: 8px;padding: 5px;':'background-color: white;border-radius: 8px;padding: 5px;'}"><a th:href="@{/movie/list}">현재상영작</a></button></span> 
+	<span style="display: inline-block;"><button th:style="${cno==2?'background-color:black;border-radius: 8px;padding: 5px;':'background-color: white;border-radius: 8px;padding: 5px;'}"><a th:href="@{/movie/list(cno=2)}">개봉예정작</a></button></span>
+	</div>
+    <!-- main body -->
+    <!-- ################################################################################################ -->
+    <div class="content"> 
+      <!-- ################################################################################################ -->
+      <div id="gallery">
+        <figure>
+          <header class="heading" style="font-family:FontAwesome;display: inline-block;" th:text="${title}"></header>
+          <!-- 검색바 -->
+          <span style="float: right;display: inline-block;margin-bottom: 20px;">search : 
+	          <input id="sd" name="sd" type="text" size="20" style="display: inline-block;margin-right: 5px;">
+	          <button class="ss" style="display: inline-block;">검색</button>
+          </span>
+          <!-- list -->
+          <ul class="nospace clear">
+            <li th:class="${index.index}%4==0?'one_quarter first':'one_quarter'" 
+            	th:each="vo,index:${list}">
+            	<a class="hoho" href="#">
+            		<img class="posters" th:src="${vo.poster}" th:title="${vo.title}" th:data-no="${vo.mno}"
+            			style="width: 380px;height: 250px"
+            		>
+            	</a>
+            	<a href="" style="font-size: 15px;"th:text="${vo.title.length>=15?#strings.substring(vo.title, 0, 15)+'...':vo.title}"></a>
+            </li>
+          </ul>
+        </figure>
+      </div>
+      <!-- ################################################################################################ -->
+      <!-- ################################################################################################ -->
+      <nav class="pagination">
+        <ul>
+         <li th:if="${startPage}>1"><a th:href="@{/movie/list(page=${startPage-1},cno=${cno})}">&laquo; Previous</a></li>      
+          <li th:each="i:${#numbers.sequence(startPage,endPage)}"
+          	  th:class="${i==curpage}?'current':''">
+          	<a th:href="@{/movie/list(page=${i},cno=${cno})}" th:text="${i}"></a>
+          </li>
+          <li thif="${endPage<totalpage}"><a th:href="@{/movie/list(page=${endPage+1},cno=${cno})}">Next &raquo;</a></li>
+        </ul>
+      </nav>
+      <!-- ################################################################################################ -->
+    </div>
+    <!-- ################################################################################################ -->
+    <!-- / main body -->
+    
+    <div class="box" id="dialog" th:title="${title}" style="display:none"> 
+    	<span id="title1" style="font-size: 20px;font-weight: bold;padding-bottom: 30px;padding-top:30px; "></span>
+         		<iframe src="" style="width:100%;height:400px;" id="movie"></iframe>
+      			<table class="table col-xs-8 text-right" style="width: 100%">
+      				<!-- <tr>
+      					<td class="col-xs-8">
+      						<img src="" style="width:30%;height: 300px;display: inline;" id="poster">
+      					</td>
+      				</tr> -->
+			        <tr>
+			          <td width=20% class="text-right">제목 </td>
+			          <td width=80% id="title"></td>
+			        </tr>
+			        <tr>
+			          <td width=20% class="text-right">평점</td>
+			          <td width=80% id="reserve"></td>
+			        </tr>
+			        <tr>
+			        	<td width=20% class="text-right">개요</td>
+			        	<td>
+			        	<span id="genre"></span> &nbsp;|&nbsp; <span id="time"></span> &nbsp;|&nbsp; <span id="regdate"></span>
+			        	</td>
+			        </tr>
+			        <tr>
+			          <td width=20% class="text-right">감독/출연진</td>
+			          <td width=80% ><span id="director"></span> | &nbsp;<span id="actor"></span></td>
+			        </tr>
+			        <tr>
+			          <td width=20% class="text-right">등급</td>
+			          <td id="grade"></td>
+			        </tr>
+			        <tr>
+			          <td width=20% class="text-right">누적관객</td>
+			          <td id="showuser"></td>
+			        </tr>
+			   </table>
+      		
+      		
+      		
+      		<!-- <iframe src="" style="width:650px;height:400px;" id="movie"></iframe> -->
+ 
+<!-- ################################################################################################### 
+
+    <div class="box" id="dialog" th:title="${title}" style="display:none">
+      <table class="table">
+        <tr>
+          <td colspan="2">
+            <iframe src="" style="width:650px;height:400px;" id="movie"></iframe>
+          </td>
+        </tr>
+        <tr>
+          <td width=20% class="text-right">제목 </td>
+          <td width=80% id="title"></td>
+        </tr>
+        <tr>
+          <td width=20% class="text-right">평점</td>
+          <td width=80% id="reserve"></td>
+        </tr>
+        <tr>
+        	<td width=20% class="text-right">개요</td>
+        	<td>
+        	<span id="genre"></span> &nbsp;|&nbsp; <span id="time"></span> &nbsp;|&nbsp; <span id="regdate"></span>
+        	</td>
+        </tr>
+        <tr>
+          <td width=20% class="text-right">감독/출연진</td>
+          <td width=80% ><span id="director"></span> | &nbsp;<span id="actor"></span></td>
+        </tr>
+        <tr>
+          <td width=20% class="text-right">등급</td>
+          <td id="grade"></td>
+        </tr>
+        <tr>
+          <td width=20% class="text-right">누적관객</td>
+          <td id="showuser"></td>
+        </tr>
+      </table>-->
+      <!-- 댓글 -->
+     </div>
+    <div class="clear"></div>
+  </main>
+</div>
+</body>
+</html>
